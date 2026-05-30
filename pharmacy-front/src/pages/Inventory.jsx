@@ -12,13 +12,13 @@ function Inventory() {
   const [branches, setBranches] = useState([])
 
   useEffect(() => {
-    axios.get('http://localhost:3000/api/inventory/branches')
+    axios.get('${import.meta.env.VITE_API_URL}/api/inventory/branches')
       .then(res => setBranches(res.data))
   }, [])
 
   useEffect(() => {
     setLoading(true)
-    axios.get(`http://localhost:3000/api/inventory/branch/${branchId}`)
+    axios.get(`${import.meta.env.VITE_API_URL}/api/inventory/branch/${branchId}`)
       .then(res => {
         setItems(res.data)
         setFiltered(res.data)

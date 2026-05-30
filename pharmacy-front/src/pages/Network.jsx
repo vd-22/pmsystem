@@ -11,12 +11,12 @@ function Network() {
   const totalEmployees = branches.reduce((sum, b) => sum + (b.employee_count || 0), 0)
 
   useEffect(() => {
-    axios.get('http://localhost:3000/api/inventory/branches')
+    axios.get('${import.meta.env.VITE_API_URL}/api/inventory/branches')
       .then(async res => {
         setBranches(res.data)
         const statsData = {}
         for (const branch of res.data) {
-          const s = await axios.get(`http://localhost:3000/api/inventory/stats/${branch.branch_id}`)
+          const s = await axios.get(`${import.meta.env.VITE_API_URL}/api/inventory/stats/${branch.branch_id}`)
           statsData[branch.branch_id] = s.data
         }
         setStats(statsData)

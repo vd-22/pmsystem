@@ -26,12 +26,12 @@ function Orders() {
   const user = JSON.parse(localStorage.getItem('user'))
 
   useEffect(() => {
-    axios.get('http://localhost:3000/api/orders/branches').then(r => {
+    axios.get('${import.meta.env.VITE_API_URL}/api/orders/branches').then(r => {
       setBranches(r.data)
       setSelectedBranch(r.data[0]?.branch_id)
     })
-    axios.get('http://localhost:3000/api/orders/products').then(r => setProducts(r.data))
-    axios.get('http://localhost:3000/api/orders/suppliers').then(r => {
+    axios.get('${import.meta.env.VITE_API_URL}/api/orders/products').then(r => setProducts(r.data))
+    axios.get('${import.meta.env.VITE_API_URL}/api/orders/suppliers').then(r => {
       setSuppliers(r.data)
       setSelectedSupplier(r.data[0]?.supplier_id)
     })
@@ -43,7 +43,7 @@ function Orders() {
   }, [products])
 
   const loadOrders = () => {
-    axios.get('http://localhost:3000/api/orders/list').then(r => setOrders(r.data))
+    axios.get('${import.meta.env.VITE_API_URL}/api/orders/list').then(r => setOrders(r.data))
   }
 
   const toggleOrder = async (orderId) => {
@@ -53,13 +53,13 @@ function Orders() {
     }
     setExpandedOrder(orderId)
     if (!orderDetails[orderId]) {
-      const r = await axios.get(`http://localhost:3000/api/orders/list/${orderId}`)
+      const r = await axios.get(`${import.meta.env.VITE_API_URL}/api/orders/list/${orderId}`)
       setOrderDetails({ ...orderDetails, [orderId]: r.data })
     }
   }
 
   const updateStatus = async (orderId, status) => {
-    await axios.patch(`http://localhost:3000/api/orders/status/${orderId}`, { status })
+    await axios.patch(`${import.meta.env.VITE_API_URL}/api/orders/status/${orderId}`, { status })
     loadOrders()
   }
 
@@ -86,7 +86,7 @@ function Orders() {
   const submitOrder = async () => {
     if (!orderItems.length) return
     try {
-      await axios.post('http://localhost:3000/api/orders/create', {
+      await axios.post('${import.meta.env.VITE_API_URL}/api/orders/create', {
         branchId: selectedBranch,
         items: orderItems
       })

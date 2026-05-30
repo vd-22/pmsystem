@@ -21,12 +21,12 @@ function Users() {
 
   useEffect(() => {
     loadUsers()
-    axios.get('http://localhost:3000/api/inventory/branches')
+    axios.get('${import.meta.env.VITE_API_URL}/api/inventory/branches')
       .then(r => setBranches(r.data))
   }, [])
 
   const loadUsers = () => {
-    axios.get('http://localhost:3000/api/users').then(r => setUsers(r.data))
+    axios.get('${import.meta.env.VITE_API_URL}/api/users').then(r => setUsers(r.data))
   }
 
   const handleCreate = async () => {
@@ -35,7 +35,7 @@ function Users() {
       return
     }
     try {
-      await axios.post('http://localhost:3000/api/users/create', form)
+      await axios.post('${import.meta.env.VITE_API_URL}/api/users/create', form)
       setSuccess('Користувача створено!')
       setError('')
       setForm({ username: '', password: '', role: 'pharmacist', branchId: '' })
@@ -50,7 +50,7 @@ function Users() {
   const handleDelete = async (userId, username) => {
     if (!confirm(`Видалити користувача ${username}?`)) return
     try {
-      await axios.delete(`http://localhost:3000/api/users/${userId}`)
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/users/${userId}`)
       loadUsers()
     } catch (err) {
       console.error(err)

@@ -10,7 +10,7 @@ function Analytics() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    axios.get('http://localhost:3000/api/inventory/branches')
+    axios.get('${import.meta.env.VITE_API_URL}/api/inventory/branches')
       .then(res => {
         setBranches(res.data.filter(b => b.branch_type === 'pharmacy'))
         setLoading(false)

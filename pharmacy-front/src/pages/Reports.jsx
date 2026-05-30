@@ -7,7 +7,7 @@ function Reports() {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    axios.get('http://localhost:3000/api/inventory/branches')
+    axios.get('${import.meta.env.VITE_API_URL}/api/inventory/branches')
       .then(r => {
         setBranches(r.data)
         setSelectedBranch(r.data[0]?.branch_id)
@@ -17,7 +17,7 @@ function Reports() {
   const generateStockReport = async () => {
     setLoading(true)
     const branch = branches.find(b => b.branch_id == selectedBranch)
-    const { data } = await axios.get(`http://localhost:3000/api/inventory/branch/${selectedBranch}`)
+    const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/inventory/branch/${selectedBranch}`)
 
     const date = new Date().toLocaleDateString('uk-UA')
     const html = `
@@ -113,12 +113,12 @@ function Reports() {
   const generateOrderReport = async () => {
     setLoading(true)
     const branch = branches.find(b => b.branch_id == selectedBranch)
-    const { data: orders } = await axios.get('http://localhost:3000/api/orders/list')
+    const { data: orders } = await axios.get('${import.meta.env.VITE_API_URL}/api/orders/list')
     const date = new Date().toLocaleDateString('uk-UA')
 
     let allItems = []
     for (const order of orders.slice(0, 5)) {
-      const { data: items } = await axios.get(`http://localhost:3000/api/orders/list/${order.order_id}`)
+      const { data: items } = await axios.get(`${import.meta.env.VITE_API_URL}/api/orders/list/${order.order_id}`)
       allItems = [...allItems, ...items.map(i => ({ ...i, orderId: order.order_id, orderDate: order.order_date }))]
     }
 
@@ -220,7 +220,7 @@ function Reports() {
   const generateLowStockRequest = async () => {
     setLoading(true)
     const branch = branches.find(b => b.branch_id == selectedBranch)
-    const { data } = await axios.get(`http://localhost:3000/api/inventory/branch/${selectedBranch}`)
+    const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/inventory/branch/${selectedBranch}`)
     const lowItems = data.filter(i => i.current_quantity <= i.min_level)
     const date = new Date().toLocaleDateString('uk-UA')
 
