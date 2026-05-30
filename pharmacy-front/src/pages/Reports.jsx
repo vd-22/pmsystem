@@ -7,7 +7,7 @@ function Reports() {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    axios.get('${import.meta.env.VITE_API_URL}/api/inventory/branches')
+    axios.get('https://pmsystem-production.up.railway.app/api/inventory/branches')
       .then(r => {
         setBranches(r.data)
         setSelectedBranch(r.data[0]?.branch_id)
@@ -113,7 +113,7 @@ function Reports() {
   const generateOrderReport = async () => {
     setLoading(true)
     const branch = branches.find(b => b.branch_id == selectedBranch)
-    const { data: orders } = await axios.get('${import.meta.env.VITE_API_URL}/api/orders/list')
+    const { data: orders } = await axios.get('https://pmsystem-production.up.railway.app/api/orders/list')
     const date = new Date().toLocaleDateString('uk-UA')
 
     let allItems = []

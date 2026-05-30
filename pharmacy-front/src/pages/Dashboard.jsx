@@ -8,7 +8,7 @@ function Dashboard() {
   const user = JSON.parse(localStorage.getItem('user'))
 
   useEffect(() => {
-    axios.get('${import.meta.env.VITE_API_URL}/api/inventory/branches')
+    axios.get('https://pmsystem-production.up.railway.app/api/inventory/branches')
       .then(async res => {
         setBranches(res.data)
         const statsData = {}

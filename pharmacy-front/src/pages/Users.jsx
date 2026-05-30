@@ -21,12 +21,12 @@ function Users() {
 
   useEffect(() => {
     loadUsers()
-    axios.get('${import.meta.env.VITE_API_URL}/api/inventory/branches')
+    axios.get('https://pmsystem-production.up.railway.app/api/inventory/branches')
       .then(r => setBranches(r.data))
   }, [])
 
   const loadUsers = () => {
-    axios.get('${import.meta.env.VITE_API_URL}/api/users').then(r => setUsers(r.data))
+    axios.get('https://pmsystem-production.up.railway.app/api/users').then(r => setUsers(r.data))
   }
 
   const handleCreate = async () => {
@@ -35,7 +35,7 @@ function Users() {
       return
     }
     try {
-      await axios.post('${import.meta.env.VITE_API_URL}/api/users/create', form)
+      await axios.post('https://pmsystem-production.up.railway.app/api/users/create', form)
       setSuccess('Користувача створено!')
       setError('')
       setForm({ username: '', password: '', role: 'pharmacist', branchId: '' })

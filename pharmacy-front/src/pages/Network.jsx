@@ -11,7 +11,7 @@ function Network() {
   const totalEmployees = branches.reduce((sum, b) => sum + (b.employee_count || 0), 0)
 
   useEffect(() => {
-    axios.get('${import.meta.env.VITE_API_URL}/api/inventory/branches')
+    axios.get('https://pmsystem-production.up.railway.app/api/inventory/branches')
       .then(async res => {
         setBranches(res.data)
         const statsData = {}
