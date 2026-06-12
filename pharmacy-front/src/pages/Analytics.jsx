@@ -3,43 +3,47 @@ import axios from 'axios'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Legend } from 'recharts'
 
 const COLORS = ['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1', '#13c2c2']
+const MONTHS = ['Січ', 'Лют', 'Бер', 'Кві', 'Тра', 'Чер', 'Лип', 'Сер', 'Вер', 'Жов', 'Лис', 'Гру']
 
 function Analytics() {
   const [branches, setBranches] = useState([])
   const [selectedBranch, setSelectedBranch] = useState('all')
+  const [revenueSummary, setRevenueSummary] = useState([])
+  const [branchRevenue, setBranchRevenue] = useState([])
   const [loading, setLoading] = useState(true)
+  const totalSold = 24350
+  const totalStock = 13630
 
   useEffect(() => {
-    axios.get('https://pmsystem-production.up.railway.app/api/inventory/branches')
-      .then(res => {
-        setBranches(res.data.filter(b => b.branch_type === 'pharmacy'))
-        setLoading(false)
-      })
+    Promise.all([
+      axios.get('https://pmsystem-production.up.railway.app/api/inventory/branches'),
+      axios.get('https://pmsystem-production.up.railway.app/api/inventory/revenue-summary')
+    ]).then(([branchRes, revenueRes]) => {
+      setBranches(branchRes.data.filter(b => b.branch_type === 'pharmacy'))
+      setRevenueSummary(Array.isArray(revenueRes.data) ? revenueRes.data : [])
+      setLoading(false)
+    })
   }, [])
 
-  // Дані для порівняння доходів філіалів
-  const revenueData = branches.map(b => ({
+  useEffect(() => {
+    if (selectedBranch !== 'all') {
+      axios.get(`https://pmsystem-production.up.railway.app/api/inventory/revenue/${selectedBranch}`)
+        .then(res => {
+          const data = res.data.map(r => ({
+            month: MONTHS[r.month - 1],
+            продажі: parseFloat(r.revenue),
+            прибуток: parseFloat(r.revenue) * 0.28
+          }))
+          setBranchRevenue(data)
+        })
+    }
+  }, [selectedBranch])
+
+  const revenueData = revenueSummary.map(b => ({
     name: b.name.replace('Філіал ', 'Аптека '),
-    дохід: parseFloat(b.monthly_revenue) || 0
+    дохід: parseFloat(b.total_revenue || 0)
   }))
 
-  // Дані динаміки продажів по місяцях (тестові)
-  const salesData = [
-    { month: 'Січ', продажі: 320000, прибуток: 89600 },
-    { month: 'Лют', продажі: 298000, прибуток: 83440 },
-    { month: 'Бер', продажі: 356000, прибуток: 99680 },
-    { month: 'Кві', продажі: 412000, прибуток: 115360 },
-    { month: 'Тра', продажі: 389000, прибуток: 108920 },
-    { month: 'Чер', продажі: 445000, прибуток: 124600 },
-    { month: 'Лип', продажі: 467000, прибуток: 130760 },
-    { month: 'Сер', продажі: 423000, прибуток: 118440 },
-    { month: 'Вер', продажі: 398000, прибуток: 111440 },
-    { month: 'Жов', продажі: 478000, прибуток: 133840 },
-    { month: 'Лис', продажі: 512000, прибуток: 143360 },
-    { month: 'Гру', продажі: 534000, прибуток: 149520 },
-  ]
-
-  // Дані по категоріях
   const categoryData = [
     { name: 'Знеболювальні', value: 28 },
     { name: 'Антибіотики', value: 18 },
@@ -49,10 +53,8 @@ function Analytics() {
     { name: 'Інші', value: 17 },
   ]
 
-  const totalRevenue = branches.reduce((sum, b) => sum + (parseFloat(b.monthly_revenue) || 0), 0)
+  const totalRevenue = revenueSummary.reduce((sum, b) => sum + parseFloat(b.total_revenue || 0), 0)
   const totalProfit = totalRevenue * 0.28
-  const totalSold = 24350
-  const totalStock = 13630
 
   if (loading) return <div style={{ padding: '40px' }}>Завантаження...</div>
 
@@ -63,7 +65,6 @@ function Analytics() {
         Дашборд з ключовими показниками ефективності мережі аптек
       </p>
 
-      {/* Вибір філіалу */}
       <div style={{ marginBottom: '24px' }}>
         <label style={{ fontSize: '13px', color: '#888', display: 'block', marginBottom: '6px' }}>
           Філіал для аналізу:
@@ -83,11 +84,10 @@ function Analytics() {
         </select>
       </div>
 
-      {/* KPI картки */}
       <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
         {[
-          { label: 'Загальний дохід', value: `${totalRevenue.toLocaleString('uk-UA')} грн`, change: '+13.8%', color: '#1890ff', up: true },
-          { label: 'Прибуток', value: `${totalProfit.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} грн`, change: '+11.2%', color: '#52c41a', up: true },
+          { label: 'Загальний дохід', value: `${(totalRevenue/1000).toFixed(0)}К грн`, change: '+13.8%', color: '#1890ff', up: true },
+          { label: 'Прибуток', value: `${(totalProfit/1000).toFixed(0)}К грн`, change: '+11.2%', color: '#52c41a', up: true },
           { label: 'Продано товарів', value: `${totalSold.toLocaleString('uk-UA')} шт`, change: '+16.3%', color: '#722ed1', up: true },
           { label: 'Товарів на складі', value: `${totalStock.toLocaleString('uk-UA')} шт`, change: '-4.2%', color: '#fa8c16', up: false },
         ].map(card => (
@@ -105,7 +105,6 @@ function Analytics() {
       </div>
 
       {selectedBranch === 'all' ? (
-        /* Зведений режим — порівняння філіалів */
         <div style={{
           background: 'white', borderRadius: '8px',
           padding: '24px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)'
@@ -121,15 +120,14 @@ function Analytics() {
           </ResponsiveContainer>
         </div>
       ) : (
-        /* Режим окремого філіалу */
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div style={{
             background: 'white', borderRadius: '8px',
             padding: '24px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)'
           }}>
-            <h3 style={{ marginBottom: '20px' }}>Динаміка продажів і прибутку</h3>
+            <h3 style={{ marginBottom: '20px' }}>Динаміка доходів по місяцях</h3>
             <ResponsiveContainer width="100%" height={280}>
-              <LineChart data={salesData}>
+              <LineChart data={branchRevenue}>
                 <XAxis dataKey="month" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip formatter={v => `₴${v.toLocaleString('uk-UA')}`} />

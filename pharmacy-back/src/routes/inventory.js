@@ -24,7 +24,6 @@ router.get('/stats/:branchId', async (req, res) => {
        WHERE sa.branch_id = $1 
        AND b.expiration_date < CURRENT_DATE`, [branchId]
     )
-
     res.json({
       total: parseInt(total.rows[0].count),
       low: parseInt(low.rows[0].count),
@@ -65,6 +64,41 @@ router.get('/branch/:branchId', async (req, res) => {
 router.get('/branches', async (req, res) => {
   try {
     const { rows } = await pool.query('SELECT * FROM branch ORDER BY branch_id')
+    res.json(rows)
+  } catch (err) {
+    res.status(500).json({ message: err.message })
+  }
+})
+
+router.get('/revenue/:branchId', async (req, res) => {
+  const { branchId } = req.params
+  try {
+    const { rows } = await pool.query(
+      `SELECT year, month, revenue 
+       FROM branch_revenue 
+       WHERE branch_id = $1 
+       ORDER BY year, month`, [branchId]
+    )
+    res.json(rows)
+  } catch (err) {
+    res.status(500).json({ message: err.message })
+  }
+})
+
+router.get('/revenue-summary', async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT 
+        b.branch_id,
+        b.name,
+        SUM(br.revenue) as total_revenue,
+        MAX(br.revenue) as max_monthly_revenue
+       FROM branch b
+       LEFT JOIN branch_revenue br ON b.branch_id = br.branch_id
+       WHERE b.branch_type = 'pharmacy'
+       GROUP BY b.branch_id, b.name
+       ORDER BY b.branch_id`
+    )
     res.json(rows)
   } catch (err) {
     res.status(500).json({ message: err.message })
